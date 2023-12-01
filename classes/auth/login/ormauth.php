@@ -280,8 +280,11 @@ class Auth_Login_Ormauth extends \Auth_Login_Driver
 			'updated_at'      => 0,
 		));
 
-		// load all additional data, passed as profile fields
-		$user->from_array($profile_fields);
+		// we don't use profile fields, store the data in the metadata table instead
+		foreach($profile_fields as $field => $value)
+		{
+			$user->metadata[] = \Model\Auth_Metadata::forge(array('key' => $field, 'value' => $value));
+		}
 
 		// save the new user record
 		try
@@ -640,13 +643,14 @@ class Auth_Login_Ormauth extends \Auth_Login_Driver
 	{
 		if (is_null($user))
 		{
-			if ( ! is_array($groups = $this->get_groups()))
-			{
-				return false;
+			$groups = $this->get_groups();
+			if (is_array($groups)) {
+				$user = reset($groups);
 			}
-			$user = reset($groups);
 		}
-		return parent::has_access($condition, $driver, $user);
+		$replaced = 0;
+		$allCondition = preg_replace('/\[\d+\]/', '[all]', $condition, 1, $replaced);
+		return (parent::has_access($condition, $driver, $user) ? : ($replaced ? parent::has_access($allCondition, $driver, $user) : false));
 	}
 
 	/**

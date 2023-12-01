@@ -190,6 +190,18 @@ class Auth_User extends \Orm\Model
 	);
 
 	/**
+	 * find the user
+	 */
+	public static function find($id = null, array $options = array())
+	{
+		// ensure the class is configured
+		static::_init();
+
+		// perform the find
+		return parent::find($id, $options);
+	}
+
+	/**
 	 * init the class
 	 */
    	public static function _init()

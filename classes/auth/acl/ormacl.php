@@ -58,7 +58,7 @@ class Auth_Acl_Ormacl extends \Auth_Acl_Driver
 	/*
 	 * Check if the user has the required permissions
 	 */
-	public function has_access($condition, Array $entity)
+	public function has_access($condition, Array $entity, $user = false)
 	{
 		// get the group driver instance
 		$group_driver = \Auth::group($entity[0]);
@@ -88,7 +88,9 @@ class Auth_Acl_Ormacl extends \Auth_Acl_Driver
 		}
 
 		// fetch the current user object
-		$user = Auth::get_user();
+		if (!$user) {
+			$user = Auth::get_user();
+		}
 
 		// some storage to collect the current rights and revoked rights, and the global flag
 		$current_rights = array();
@@ -109,7 +111,7 @@ class Auth_Acl_Ormacl extends \Auth_Acl_Driver
 		catch (\CacheNotFoundException $e)
 		{
 			// get the role objects assigned to this group
-			$current_roles  = $entity[1]->roles;
+			$current_roles  = (isset($entity[1]) ? $entity[1]->roles : array());
 
 			// if we have a user, add the roles directly assigned to the user
 			if ($user)
